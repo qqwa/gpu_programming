@@ -1,0 +1,11 @@
+void kernel simple_add(
+global const int* A,
+global const int* B,
+global int* C) {
+    int global_id = get_global_id(0); //absolute id -> group_id * local_size + local_id
+    //int local_id = get_local_id(0); //id inside of group
+    //int local_size = get_local_size(0); //size of group
+    //int group_id = get_group_id(0); //id of group
+    //int global_work_size = get_global_size(0); //total count of work items
+    C[global_id]=A[global_id]+B[global_id];
+}
