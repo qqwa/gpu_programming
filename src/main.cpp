@@ -23,7 +23,7 @@ int main() {
     auto buffer_C = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, sizeof(int)*C.size(), C.data());
 
     // copy generated data to buffers
-    queue.enqueueMigrateMemObjects({buffer_A, buffer_B}, 0);
+    // queue.enqueueMigrateMemObjects({buffer_A, buffer_B}, 0);
 
     // run kernel
     auto kernel_add = cl::Kernel(program, "simple_add");
@@ -33,12 +33,9 @@ int main() {
     queue.enqueueNDRangeKernel(kernel_add, cl::NullRange, cl::NDRange(C.size()), cl::NullRange);
     queue.finish();
 
-    // read buffer_C to C
-    queue.enqueueMigrateMemObjects({buffer_C}, CL_MIGRATE_MEM_OBJECT_HOST);
-
-    // not sure about this part
-    auto smart_pointer = cl::Memory(buffer_C);
-    buffer_C = 0;
+    // read buffer_C to C ReadBuffer for IntelGPU
+    queue.enqueueReadBuffer(buffer_C,CL_TRUE,0,sizeof(int)*C.size(),C.data());
+    // queue.enqueueMigrateMemObjects({buffer_C}, CL_MIGRATE_MEM_OBJECT_HOST);
 
     // output
     std::cout<<" result: \n    ";
@@ -48,12 +45,6 @@ int main() {
     std::cout << "..." << std::endl;
 
     std::cout << "Size C: " << C.size() << std::endl;
-    smart_pointer = 0;
-    sleep(1);
-    std::cout << "Size C: " << C.size() << std::endl;
-
-    std::cout << "Buffer B<CL_MEM_SIZE>: " << buffer_B.getInfo<CL_MEM_SIZE>() << std::endl;
-
 
     return 0;
 }
